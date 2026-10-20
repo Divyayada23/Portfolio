@@ -1,0 +1,453 @@
+/* Portfolio: back page (forest) + fun house scene (night party).
+   Everything is positioned in % of a 16:9 stage, measured from the Figma "final look",
+   so nothing drifts when the window resizes. */
+
+:root {
+  --forest-edge: #0f3612;      /* matches the scene's outer edge for letterboxing */
+  --glow: 255, 200, 110;       /* warm window-light glow */
+  --beat: 0.5s;                /* the party tempo: 120 BPM. Change this to speed everyone up or down. */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  background: var(--forest-edge);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.stage {
+  position: relative;
+  width: min(100vw, calc(100vh * 16 / 9));
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  container-type: inline-size;       /* lets us measure in "art pixels" below */
+  --p: calc(100cqw / 640);           /* one art pixel (the art is drawn on a 640 x 360 grid) */
+}
+
+.layer { position: absolute; inset: 0; }
+
+.bg, .fun-bg, .fun-fg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;        /* keeps pixel art crisp when scaled up */
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ---------- back page pieces ---------- */
+.piece {
+  position: absolute;
+  display: block;
+  background: none;
+  border: 0;
+  padding: 0;
+  -webkit-user-drag: none;
+}
+.piece img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+img.piece { height: auto; }
+
+/* positions: left / top / width as % of the 1920 x 1080 stage */
+.house-fun      { left:  9.167%; top: 61.667%; width: 14.062%; }
+.house-projects { left: 27.865%; top: 63.148%; width: 13.229%; }
+.cocori         { left: 72.240%; top: 66.019%; width:  8.021%; }
+.rosebush       { left: 84.948%; top: 62.685%; width: 14.115%; }
+
+.house, .cocori, .rosebush {
+  cursor: pointer;
+  transition: transform 160ms steps(3, end), filter 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.house:hover, .house:focus-visible,
+.cocori:hover, .cocori:focus-visible, .rosebush:hover, .rosebush:focus-visible {
+  transform: translateY(-0.4%);
+}
+.house:hover img, .house:focus-visible img,
+.cocori:hover img, .cocori:focus-visible img,
+.rosebush:hover img, .rosebush:focus-visible img {
+  filter: drop-shadow(0 0 0.9vmin rgba(var(--glow), 0.75)) brightness(1.07);
+}
+.piece:hover .tag, .piece:focus-visible .tag,
+.bottle:hover .tag, .bottle:focus-visible .tag { background: #7a4a22; border-color: #fff; }
+.house:focus-visible, .cocori:focus-visible, .rosebush:focus-visible {
+  outline: 2px dashed rgba(var(--glow), 0.9);
+  outline-offset: 4px;
+}
+
+/* ====================================================================
+   FUN HOUSE SCENE
+   ==================================================================== */
+.fun[hidden] { display: none; }
+.fun { background: #0c1612; }
+
+/* Dancers: left / top / width as % of the 640 x 360 art grid (x/640, y/360, w/640) */
+.dancer { position: absolute; will-change: transform; }
+.dancer img { display: block; width: 100%; height: auto; image-rendering: pixelated; user-select: none; -webkit-user-drag: none; }
+
+.zebra           { left: 71.406%; top: 38.611%; width: 18.281%; }
+.giraffe         { left: 77.500%; top: 20.556%; width: 21.875%; }
+.lion            { left:  7.813%; top: 58.611%; width: 20.000%; }
+.snake           { left: 56.563%; top: 25.556%; width: 14.844%; }
+.monkey-hanging  { left: 14.531%; top:  4.722%; width: 16.719%; }
+.monkey-sitting  { left: 78.125%; top:  6.111%; width: 10.000%; }
+.parrot-left     { left:  4.688%; top: 10.278%; width:  7.500%; }
+.parrot-right    { left: 92.813%; top:  4.167%; width:  6.406%; }
+
+/* Giraffe: the head and neck are a second copy that bends at the shoulders.
+   Body keeps rows 136+, head keeps rows 0-142 (6 rows overlap so there is never a gap). */
+.giraffe { position: absolute; }
+.giraffe .g-body { clip-path: inset(47.552% 0 0 0); }                    /* 136 / 286 */
+.giraffe .g-head {
+  position: absolute; inset: 0;
+  clip-path: inset(0 0 50.350% 0);                                       /* keep 0 - 142 */
+  transform-origin: 61.4% 47.55%;                                        /* neck base: x 86 / 140, y 136 / 286 */
+}
+
+/* The foreground leaves sit in front of the animals' feet */
+.fun-fg { pointer-events: none; }
+
+/* ---------- dance moves ----------
+   Each move is a handful of held poses (steps(1)), like frames in a sprite sheet,
+   and moves in whole art pixels (--p) so the pixels stay crisp. */
+.dancer, .giraffe .g-head { animation-play-state: paused; }
+.fun.is-dancing .dancer,
+.fun.is-dancing .giraffe .g-head { animation-play-state: running; }
+
+.lion {
+  transform-origin: 50% 100%;
+  animation: hop var(--beat) steps(1, end) infinite;
+}
+@keyframes hop {
+  0%   { transform: translateY(0) scale(1.03, 0.96); }
+  25%  { transform: translateY(calc(var(--p) * -3)); }
+  50%  { transform: translateY(calc(var(--p) * -5)); }
+  75%  { transform: translateY(calc(var(--p) * -2)); }
+}
+
+.zebra {
+  transform-origin: 50% 100%;
+  animation: groove calc(var(--beat) * 2) steps(1, end) infinite;
+  animation-delay: calc(var(--beat) * -0.5);
+}
+@keyframes groove {                       /* a little figure-eight shuffle, 8 frames over 2 beats */
+  0%     { transform: translate(calc(var(--p) * -2), 0); }
+  12.5%  { transform: translate(calc(var(--p) * -1), calc(var(--p) * -1)); }
+  25%    { transform: translate(0, calc(var(--p) * -2)); }
+  37.5%  { transform: translate(calc(var(--p) * 1), calc(var(--p) * -1)); }
+  50%    { transform: translate(calc(var(--p) * 2), 0); }
+  62.5%  { transform: translate(calc(var(--p) * 1), calc(var(--p) * -1)); }
+  75%    { transform: translate(0, calc(var(--p) * -2)); }
+  87.5%  { transform: translate(calc(var(--p) * -1), calc(var(--p) * -1)); }
+}
+
+.giraffe { animation: nod var(--beat) steps(1, end) infinite; }
+@keyframes nod {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(calc(var(--p) * -1)); }
+}
+.giraffe .g-head { animation: neck-sway calc(var(--beat) * 4) steps(1, end) infinite; }
+@keyframes neck-sway {                    /* neck leans left, centre, right, centre */
+  0%    { transform: rotate(-3deg); }
+  12.5% { transform: rotate(-1.5deg); }
+  25%   { transform: rotate(0deg); }
+  37.5% { transform: rotate(1.5deg); }
+  50%   { transform: rotate(3deg); }
+  62.5% { transform: rotate(1.5deg); }
+  75%   { transform: rotate(0deg); }
+  87.5% { transform: rotate(-1.5deg); }
+}
+
+.monkey-hanging {
+  transform-origin: 26% 14%;              /* where his tail grips the branch */
+  animation: swing calc(var(--beat) * 4) steps(1, end) infinite;
+}
+@keyframes swing {
+  0%    { transform: rotate(-5deg); }
+  12.5% { transform: rotate(-3deg); }
+  25%   { transform: rotate(0deg); }
+  37.5% { transform: rotate(3deg); }
+  50%   { transform: rotate(5deg); }
+  62.5% { transform: rotate(3deg); }
+  75%   { transform: rotate(0deg); }
+  87.5% { transform: rotate(-3deg); }
+}
+
+.monkey-sitting {
+  transform-origin: 50% 100%;
+  animation: bounce calc(var(--beat) * 2) steps(1, end) infinite;
+}
+@keyframes bounce {                       /* two bounces then a shimmy, tied to the beat */
+  0%   { transform: translateY(0); }
+  12.5% { transform: translateY(calc(var(--p) * -2)); }
+  25%  { transform: translateY(0); }
+  37.5% { transform: translateY(calc(var(--p) * -2)); }
+  50%  { transform: translate(calc(var(--p) * -1), 0) rotate(-3deg); }
+  62.5% { transform: translate(calc(var(--p) * 1), calc(var(--p) * -1)) rotate(3deg); }
+  75%  { transform: translate(calc(var(--p) * -1), 0) rotate(-3deg); }
+  87.5% { transform: translate(calc(var(--p) * 1), calc(var(--p) * -1)) rotate(3deg); }
+}
+
+.snake {
+  transform-origin: 68% 9%;               /* hangs from the branch */
+  animation: slither calc(var(--beat) * 4) steps(1, end) infinite;
+}
+@keyframes slither {
+  0%    { transform: rotate(-3deg); }
+  12.5% { transform: rotate(-2deg); }
+  25%   { transform: rotate(0deg); }
+  37.5% { transform: rotate(2deg); }
+  50%   { transform: rotate(3deg); }
+  62.5% { transform: rotate(2deg); }
+  75%   { transform: rotate(0deg); }
+  87.5% { transform: rotate(-2deg); }
+}
+
+.parrot-left, .parrot-right {
+  transform-origin: 50% 90%;
+  animation: perch-bob var(--beat) steps(1, end) infinite;
+}
+.parrot-right { animation-delay: calc(var(--beat) * -0.5); }
+@keyframes perch-bob {
+  0%   { transform: translateY(0) rotate(0deg); }
+  25%  { transform: translateY(calc(var(--p) * -1)) rotate(-4deg); }
+  50%  { transform: translateY(calc(var(--p) * -2)) rotate(0deg); }
+  75%  { transform: translateY(calc(var(--p) * -1)) rotate(4deg); }
+}
+
+/* ---------- pulsing string lights (added by js/fun.js) ---------- */
+.bulbs, .fireflies { position: absolute; inset: 0; pointer-events: none; }
+.bulb {
+  position: absolute;
+  width: 4.4%;                            /* about 28 art pixels wide */
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--c), 0.9) 0%, rgba(var(--c), 0.35) 30%, rgba(var(--c), 0) 68%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: pulse calc(var(--beat) * 4) ease-in-out infinite;
+  animation-play-state: paused;
+}
+.fun.is-dancing .bulb { animation-play-state: running; }
+@keyframes pulse {
+  0%, 100% { opacity: 0.05; transform: translate(-50%, -50%) scale(0.8); }
+  50%      { opacity: 0.85; transform: translate(-50%, -50%) scale(1.15); }
+}
+
+/* ---------- drifting fireflies (added by js/fun.js) ---------- */
+.firefly {
+  position: absolute;
+  width: calc(var(--p) * 2);
+  height: calc(var(--p) * 2);
+  background: rgb(var(--c));
+  box-shadow: 0 0 calc(var(--p) * 5) calc(var(--p) * 2) rgba(var(--c), 0.55);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation:
+    drift var(--dur) ease-in-out infinite alternate,
+    blink var(--blink) steps(1, end) infinite;
+  animation-play-state: paused;
+}
+.fun.is-dancing .firefly { animation-play-state: running; }
+@keyframes drift {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(var(--dx), var(--dy)); }
+}
+@keyframes blink {
+  0%   { opacity: 0.15; }
+  20%  { opacity: 0.9; }
+  45%  { opacity: 0.45; }
+  70%  { opacity: 1; }
+  90%  { opacity: 0.25; }
+}
+
+/* ---------- back button ---------- */
+.back-btn {
+  position: absolute;
+  left: 2.2%;
+  bottom: 3.6%;
+  z-index: 5;
+  font: 700 clamp(12px, 1.35vw, 22px)/1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  letter-spacing: 0.04em;
+  color: #ffe9b8;
+  background: #3a2411;
+  border: 0;
+  padding: 0.7em 1em 0.75em;
+  cursor: pointer;
+  /* chunky pixel border: stacked hard-edged shadows */
+  box-shadow:
+    0 -3px 0 0 #c89b5a, 0 3px 0 0 #1c0f06,
+    -3px 0 0 0 #c89b5a, 3px 0 0 0 #1c0f06;
+}
+.back-btn:hover, .back-btn:focus-visible { background: #55361a; color: #fff6dc; }
+.back-btn:focus-visible { outline: 2px dashed rgba(var(--glow), 0.9); outline-offset: 8px; }
+
+/* ---------- reduced motion: show the scene, skip the dancing ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .house, .cocori { transition: none; }
+  .dancer, .giraffe .g-head, .bulb, .firefly { animation: none !important; }
+  .bulb { opacity: 0.35; }
+  .firefly { opacity: 0.8; }
+}
+
+/* ===== labels next to everything on the forest page ===== */
+.tag {
+  position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%);
+  margin-bottom: calc(var(--u) * 2);
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 2);
+  padding: calc(var(--u) * 5) calc(var(--u) * 12); white-space: nowrap;
+  font: 600 calc(var(--u) * 19)/1 var(--sign-font); letter-spacing: .03em; color: #fff1cf;
+  background: rgba(60, 34, 14, .86); border: calc(var(--u) * 2) solid #f6deb0; border-radius: calc(var(--u) * 8);
+  box-shadow: 0 calc(var(--u) * 4) 0 rgba(20, 10, 4, .35);
+  cursor: inherit;
+}
+.tag small { font: 500 calc(var(--u) * 14)/1 var(--sign-font); color: #ffe2a0; letter-spacing: .02em; }
+.house-fun .tag { margin-bottom: calc(var(--u) * -14); }
+.house-projects .tag { margin-bottom: calc(var(--u) * -10); }
+.cocori .tag { margin-bottom: calc(var(--u) * -6); }
+.rosebush .tag { margin-bottom: calc(var(--u) * -4); }
+
+/* ===== in the pond: About me sign + message in a bottle ===== */
+.pond-sign, .bottle { position: absolute; z-index: 3; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.pond-sign { left: 44.7%; top: 51.9%; width: 6.875%; }
+.bottle    { left: 57.4%;  top: 82%;   width: 5%; animation: bob 3.2s steps(2, end) infinite; }
+.pond-sign img, .bottle img { display: block; width: 100%; height: auto; image-rendering: pixelated; position: relative; z-index: 1; }
+.pond-sign:hover img, .pond-sign:focus-visible img, .pond-sign[aria-expanded="true"] img,
+.bottle:hover img, .bottle:focus-visible img, .bottle[aria-expanded="true"] img { filter: drop-shadow(0 0 calc(var(--u) * 8) rgba(255, 244, 190, .95)); }
+.pond-sign:focus-visible, .bottle:focus-visible, .rosebush:focus-visible { outline: calc(var(--u) * 4) solid #fff; outline-offset: calc(var(--u) * 4); }
+.sign-text {
+  position: absolute; z-index: 2; left: 0; right: 0; top: 4%; height: 74%;
+  display: grid; place-items: center;
+  font: 700 calc(var(--u) * 19)/1 var(--sign-font); color: #3a2110; letter-spacing: .02em;
+  pointer-events: none; white-space: nowrap;
+}
+.bottle .tag { margin-bottom: calc(var(--u) * 4); }
+.ripple {
+  position: absolute; left: -20%; right: -20%; bottom: calc(var(--u) * -8); height: calc(var(--u) * 24);
+  border: calc(var(--u) * 3) solid rgba(255, 255, 255, .55); border-radius: 50%;
+  animation: ripple 2.4s steps(4, end) infinite; pointer-events: none;
+}
+@keyframes ripple { from { transform: scale(.55); opacity: .9; } to { transform: scale(1.15); opacity: 0; } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(calc(var(--u) * 4)); } }
+@media (prefers-reduced-motion: reduce) { .ripple, .bottle { animation: none; } .ripple { opacity: .5; } }
+
+/* speech bubbles (About me, Contact, Artwork credit) */
+.bubble {
+  position: absolute; z-index: 4; width: calc(var(--u) * 430);
+  padding: calc(var(--u) * 16) calc(var(--u) * 22) calc(var(--u) * 18);
+  font: 500 calc(var(--u) * 23)/1.35 var(--sign-font); color: #2f1b0c;
+  background: #fff4d6; border: calc(var(--u) * 6) solid #5b3416; border-radius: calc(var(--u) * 14);
+  box-shadow: 0 calc(var(--u) * 8) 0 rgba(30, 15, 5, .35);
+}
+#about-bubble   { left: calc(var(--u) * 560);  top: calc(var(--u) * 150); width: calc(var(--u) * 480); }
+#contact-bubble { left: calc(var(--u) * 1000); top: calc(var(--u) * 470); width: calc(var(--u) * 380); }
+#credit-bubble  { left: calc(var(--u) * 1440); top: calc(var(--u) * 240); width: calc(var(--u) * 400); }
+.bubble[hidden] { display: none; }
+.bubble p { margin: 0 0 calc(var(--u) * 6); }
+.bubble p:last-child { margin-bottom: 0; }
+.bubble a { color: #8c2a3d; font-weight: 600; }
+.bubble .placeholder { font-style: italic; opacity: .7; }
+.bubble-x { position: absolute; top: calc(var(--u) * -18); right: calc(var(--u) * -18); width: calc(var(--u) * 38); height: calc(var(--u) * 38); font: 600 calc(var(--u) * 26)/1 var(--sign-font); color: #f6deb0; background: #5b3416; border: 0; border-radius: 50%; cursor: pointer; }
+
+/* contact form inside the bottle bubble */
+.bubble-title { font-weight: 700; font-size: calc(var(--u) * 24); }
+.contact-form { display: flex; flex-direction: column; gap: calc(var(--u) * 8); }
+.contact-form label { display: flex; flex-direction: column; gap: calc(var(--u) * 3); font-size: calc(var(--u) * 18); font-weight: 600; }
+.contact-form input[type="text"], .contact-form textarea {
+  font: 500 calc(var(--u) * 20)/1.3 var(--sign-font); color: #2f1b0c; padding: calc(var(--u) * 6) calc(var(--u) * 10);
+  background: #fffaf0; border: calc(var(--u) * 3) solid #5b3416; border-radius: calc(var(--u) * 8); resize: none; width: 100%; box-sizing: border-box;
+}
+.contact-form input:focus-visible, .contact-form textarea:focus-visible { outline: calc(var(--u) * 3) solid #8c2a3d; outline-offset: calc(var(--u) * 1); }
+.contact-form .hp { position: absolute; left: -9999px; }
+.contact-form button { align-self: flex-start; padding: calc(var(--u) * 7) calc(var(--u) * 22); font: 700 calc(var(--u) * 20)/1 var(--sign-font); color: #f6deb0; background: #5b3416; border: 0; border-radius: calc(var(--u) * 8); cursor: pointer; }
+.contact-form button:disabled { opacity: .6; cursor: default; }
+.form-status { min-height: calc(var(--u) * 20); margin: 0; font-size: calc(var(--u) * 17); color: #8c2a3d; }
+.contact-link { font-size: calc(var(--u) * 19); }
+
+/* ===== frog cursor ===== */
+.stage { cursor: url('../assets/cursor/frog.svg') 19 20, auto; }
+.stage a, .stage button, .stage summary, .stage [role="button"] { cursor: url('../assets/cursor/frog-hop.svg') 19 20, pointer !important; }
+.stage input[type="text"], .stage textarea { cursor: text !important; }
+.stage button:disabled { cursor: url('../assets/cursor/frog.svg') 19 20, not-allowed !important; }
+
+/* ===== wooden coconut disco balls (fun house): one small ball per project ===== */
+.disco-wrap { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.dball { position: absolute; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; transition: transform .15s;
+  filter: drop-shadow(0 calc(var(--u) * 10) calc(var(--u) * 14) rgba(0, 0, 0, .55)); }
+.is-dancing .dball { animation: dball-bob calc(var(--beat) * 8) steps(8, end) infinite alternate; animation-delay: var(--bob, 0s); }
+@keyframes dball-bob { from { translate: 0 calc(var(--u) * -8); } to { translate: 0 calc(var(--u) * 8); } }
+.dball:hover, .dball:focus-visible, .dball.is-active { transform: scale(1.12); }
+.dball:focus-visible { outline: none; }
+.dball:focus-visible img { filter: drop-shadow(0 0 calc(var(--u) * 6) #fff); }
+.dball img { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.dlights { position: absolute; inset: 0; pointer-events: none; }
+.dlight { position: absolute; width: calc(var(--u) * 10); height: calc(var(--u) * 10); transform: translate(-50%, -50%); border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .95) 0 22%, rgba(var(--c), .95) 30%, rgba(var(--c), .0) 72%);
+  animation: dlight calc(var(--beat) * 2) steps(2, end) infinite; }
+@keyframes dlight { 0%, 100% { opacity: .35; transform: translate(-50%, -50%) scale(.8); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); } }
+.dball .tag { bottom: auto; top: 100%; left: 50%; transform: translateX(-50%); margin: calc(var(--u) * 12) 0 0; white-space: nowrap; font-size: calc(var(--u) * 20); }
+.dball:hover .tag, .dball:focus-visible .tag, .dball.is-active .tag { background: #7a4a22; border-color: #fff; }
+.fun-card { position: absolute; z-index: 7; left: calc(var(--u) * 560); bottom: calc(var(--u) * 60); width: calc(var(--u) * 800); max-height: calc(var(--u) * 560); }
+.fun-card[hidden] { display: none; }
+.fun-card h3 { margin-right: calc(var(--u) * 60); }
+.card-x { position: absolute; top: calc(var(--u) * 12); right: calc(var(--u) * 14); width: calc(var(--u) * 40); height: calc(var(--u) * 40); font: 700 calc(var(--u) * 28)/1 var(--sign-font); color: var(--cream); background: var(--wood-dark); border: 0; border-radius: 50%; cursor: pointer; }
+.game-frame { position: absolute; left: calc(var(--u) * 610); top: calc(var(--u) * 60); width: calc(var(--u) * 700); height: calc(var(--u) * 900); border: 0; background: transparent; }
+
+/* fun project labels (no balls): the name is the button */
+.dlabel { padding: 0; width: 0; height: 0; transform: none; filter: none; }
+.dlabel .tag { top: 0; left: 0; bottom: auto; transform: translate(-50%, -50%); margin: 0; font-size: calc(var(--u) * 26); padding: calc(var(--u) * 9) calc(var(--u) * 20); border-width: calc(var(--u) * 3); transition: transform .15s; }
+.dlabel:hover, .dlabel:focus-visible, .dlabel.is-active { transform: none; }
+.dlabel:hover .tag, .dlabel:focus-visible .tag, .dlabel.is-active .tag { transform: translate(-50%, -50%) scale(1.1); }
+
+/* Cocori chat bubble */
+#cocori-bubble { left: calc(var(--u) * 1020); top: calc(var(--u) * 130); width: calc(var(--u) * 560); }
+.chat-head { display: flex; align-items: center; gap: calc(var(--u) * 10); margin-bottom: calc(var(--u) * 8); }
+.chat-head img { width: calc(var(--u) * 36); height: auto; image-rendering: pixelated; }
+.chat-head strong { font-size: calc(var(--u) * 26); }
+.chat-head span { font-size: calc(var(--u) * 17); opacity: .7; }
+.chat-log { height: calc(var(--u) * 240); overflow-y: auto; display: flex; flex-direction: column; gap: calc(var(--u) * 8); padding: calc(var(--u) * 4) calc(var(--u) * 6) calc(var(--u) * 4) 0; }
+.chat-msg { max-width: 88%; padding: calc(var(--u) * 8) calc(var(--u) * 12); border-radius: calc(var(--u) * 12); font-size: calc(var(--u) * 20); line-height: 1.3; }
+.chat-msg p { margin: 0 !important; }
+.chat-msg.bot { align-self: flex-start; background: #f0dcaa; }
+.chat-msg.me { align-self: flex-end; background: #5b3416; color: #fff1cf; }
+.chat-sign { display: block; margin-top: calc(var(--u) * 4); font-size: calc(var(--u) * 16); font-style: italic; color: #8c2a3d; }
+.chat-chips { display: flex; flex-wrap: wrap; gap: calc(var(--u) * 6); margin: calc(var(--u) * 8) 0; }
+.chat-chips button { font: 600 calc(var(--u) * 16)/1 var(--sign-font); color: #5b3416; background: #fffaf0; border: calc(var(--u) * 2) solid #5b3416; border-radius: calc(var(--u) * 14); padding: calc(var(--u) * 6) calc(var(--u) * 10); cursor: pointer; }
+.chat-chips button:hover { background: #f0dcaa; }
+.chat-form { display: flex; gap: calc(var(--u) * 8); }
+.chat-form input { flex: 1; min-width: 0; font: 500 calc(var(--u) * 20)/1.3 var(--sign-font); color: #2f1b0c; padding: calc(var(--u) * 6) calc(var(--u) * 10); background: #fffaf0; border: calc(var(--u) * 3) solid #5b3416; border-radius: calc(var(--u) * 8); cursor: text; }
+.chat-form button { font: 700 calc(var(--u) * 20)/1 var(--sign-font); color: #f6deb0; background: #5b3416; border: 0; border-radius: calc(var(--u) * 8); padding: 0 calc(var(--u) * 18); cursor: pointer; }
+
+/* About me: points + dropdown */
+.points { margin: calc(var(--u) * 6) 0 0; padding-left: calc(var(--u) * 24); }
+.points li { margin-bottom: calc(var(--u) * 6); }
+.points li::marker { color: #8c2a3d; }
+.more { margin-top: calc(var(--u) * 10); border-top: calc(var(--u) * 2) dashed #b98a4e; padding-top: calc(var(--u) * 8); }
+.more summary { list-style: none; cursor: pointer; font-weight: 700; color: #8c2a3d; display: flex; align-items: center; gap: calc(var(--u) * 8); }
+.more summary::-webkit-details-marker { display: none; }
+.more summary::after { content: ''; width: calc(var(--u) * 10); height: calc(var(--u) * 10); border-right: calc(var(--u) * 3) solid #8c2a3d; border-bottom: calc(var(--u) * 3) solid #8c2a3d; transform: rotate(45deg) translateY(calc(var(--u) * -3)); transition: transform .15s; }
+.more[open] summary::after { transform: rotate(225deg) translateY(calc(var(--u) * -3)); }
+.more summary:focus-visible { outline: calc(var(--u) * 3) solid #8c2a3d; outline-offset: calc(var(--u) * 3); }
+/* note on the forest page */
+.wip-note { position: absolute; z-index: 3; left: 50%; bottom: calc(var(--u) * 14); transform: translateX(-50%); margin: 0; max-width: calc(var(--u) * 860); text-align: center; pointer-events: none;
+  padding: calc(var(--u) * 6) calc(var(--u) * 16); font: 500 calc(var(--u) * 19)/1.3 var(--sign-font); color: #fff1cf; background: rgba(60, 34, 14, .82); border-radius: calc(var(--u) * 10); }
+/* Cocori project search results */
+.chat-results { display: flex; flex-direction: column; gap: calc(var(--u) * 5); margin-top: calc(var(--u) * 8); }
+.chat-results button { text-align: left; font: 600 calc(var(--u) * 17)/1.25 var(--sign-font); color: #2f1b0c; background: #fffaf0; border: calc(var(--u) * 2) solid #5b3416; border-radius: calc(var(--u) * 8); padding: calc(var(--u) * 6) calc(var(--u) * 10); cursor: pointer; }
+.chat-results button:hover { background: #f6deb0; }
+.chat-results small { display: block; font-weight: 500; opacity: .7; }
+.chat-label { font-size: calc(var(--u) * 16); font-weight: 700; margin-top: calc(var(--u) * 6) !important; }
+
+/* Resume button (forest page, top right) */
+.resume-btn { position: absolute; z-index: 5; left: calc(var(--u) * 40); top: calc(var(--u) * 450); padding: calc(var(--u) * 10) calc(var(--u) * 24);
+  font: 700 calc(var(--u) * 26)/1 var(--sign-font); letter-spacing: .03em; color: #fff1cf; text-decoration: none; background: #5b3416;
+  border: calc(var(--u) * 4) solid #f6deb0; border-radius: calc(var(--u) * 12); box-shadow: 0 calc(var(--u) * 6) 0 rgba(30, 15, 5, .45); cursor: pointer; transition: transform .12s; }
+.resume-btn:hover, .resume-btn:focus-visible { transform: translateY(calc(var(--u) * -3)); background: #7a4a22; outline: none; }
+.resume-btn:focus-visible { box-shadow: 0 0 0 calc(var(--u) * 4) #fff; }
+.about-resume { margin-top: calc(var(--u) * 8) !important; font-weight: 700; }

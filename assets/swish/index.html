@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Swish Signs</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; touch-action: none;
+    font-family: "Fredoka", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  canvas.drag { cursor: grabbing; }
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Swish Signs: drag the basketball back and let go to shoot"></canvas>
+<script>
+(function () {
+  'use strict';
+  /* Swish Signs: drag the ball back, let go, and swish it for a little sign. */
+  var MESSAGES = [
+    'Everything your heart desires is already YOURS',
+    'You are unique, so don’t compare yourself to anyone, twin',
+    'Your future shines bright like a diamond',
+    'Imperfections are so chic, so no shaming yourself',
+    'You are LOVED and CELEBRATED',
+    'Money will come and go, so get that matcha, girl',
+    'Take a deep breath. You got this.',
+    'If you’re seeing this: celebrate YOU for being YOU',
+    'Your potential is limitless',
+    'Ughhh how can you be this cute, funny, charming, intelligent... the list goes on'
+  ];
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var DW = 500, DH = 700;                         // design size; everything is drawn on this and scaled
+  var S = 1, OX = 0, OY = 0, DPR = 1;
+  var GRAVITY = 0.48, RESTITUTION = 0.45, BR = 19; // gentle gravity, bouncy-ish, ball radius
+  var RIM = { cx: 250, y: 215, w: 150 };
+  var START = { x: 250, y: 590 };
+  var ball = { x: START.x, y: START.y, vx: 0, vy: 0 };
+  var state = 'ready';                           // ready | drag | flying | won | demo
+  var pointer = null, scored = false, swishes = 0, bag = [], message = null, messageAt = 0, resetAt = 0;
+  var demo = null, idleSince = performance.now(), demoDone = false;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var w = cv.clientWidth, h = cv.clientHeight;
+    cv.width = Math.round(w * DPR); cv.height = Math.round(h * DPR);
+    S = Math.min(w / DW, h / DH); OX = (w - DW * S) / 2; OY = (h - DH * S) / 2;
+  }
+  window.addEventListener('resize', resize); resize();
+
+  function rimL() { return RIM.cx - RIM.w / 2; }
+  function rimR() { return RIM.cx + RIM.w / 2; }
+
+  /* one physics step; returns true on the frame the ball swishes through */
+  function step(b, dt) {
+    var scoredNow = false, prevY = b.y;
+    b.vy += GRAVITY * dt; b.x += b.vx * dt; b.y += b.vy * dt;
+    if (b.vy > 0 && !b.through && b.y > RIM.y - 10 && prevY <= RIM.y + 22 && b.y < RIM.y + 22 &&
+        b.x > rimL() - BR * 0.1 && b.x < rimR() + BR * 0.1) { b.through = true; scoredNow = true; }
+    if (b.through) { b.vx *= 0.92; }
+    // rim posts (the two ends of the rim)
+    [rimL(), rimR()].forEach(function (px) {
+      var dx = b.x - px, dy = b.y - RIM.y, d = Math.sqrt(dx * dx + dy * dy), min = BR + 4;
+      if (d < min && d > 0 && !b.through) {
+        var nx = dx / d, ny = dy / d, dot = b.vx * nx + b.vy * ny;
+        if (dot < 0) { b.vx -= (1 + RESTITUTION) * dot * nx; b.vy -= (1 + RESTITUTION) * dot * ny; }
+        b.x = px + nx * min; b.y = RIM.y + ny * min;
+      }
+    });
+    // backboard: only bounces the ball when it comes up from below or from the side
+    var bx0 = RIM.cx - 70, bx1 = RIM.cx + 70, by0 = RIM.y - 120, by1 = RIM.y - 20;
+    if (b.x > bx0 - BR && b.x < bx1 + BR && b.y > by0 - BR && b.y < by1 + BR && !b.through) {
+      if (b.vy < 0 && b.y > by1 - 6) { b.y = by1 + BR; b.vy = -b.vy * RESTITUTION; }
+      else if (b.vy < 0 && b.y > by0 && b.y < by1) { b.vy = -b.vy * RESTITUTION; b.vx *= 0.8; }
+    }
+    // floor / walls
+    if (b.x < BR) { b.x = BR; b.vx = -b.vx * RESTITUTION; }
+    if (b.x > DW - BR) { b.x = DW - BR; b.vx = -b.vx * RESTITUTION; }
+    return scoredNow;
+  }
+  function simulate(vx, vy) {
+    var b = { x: START.x, y: START.y, vx: vx, vy: vy, through: false }, best = null, t;
+    for (t = 0; t < 260; t++) {
+      if (step(b, 1)) { best = Math.abs(b.x - RIM.cx); break; }
+      if (b.y > DH + 60) break;
+    }
+    return best;
+  }
+  function findDemoShot() {
+    var best = null, vx, vy, off;
+    for (vx = -5; vx <= 5; vx += 0.25) for (vy = -26; vy <= -12; vy += 0.25) {
+      off = simulate(vx, vy);
+      if (off !== null && off < 14 && (!best || off < best.off || (Math.abs(off - best.off) < 2 && Math.hypot(vx, vy) < best.sp))) best = { vx: vx, vy: vy, off: off, sp: Math.hypot(vx, vy) };
+    }
+    return best;
+  }
+  var DEMO = findDemoShot();
+
+  function nextMessage() {
+    if (!bag.length) { bag = MESSAGES.slice(); for (var i = bag.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = bag[i]; bag[i] = bag[j]; bag[j] = t; } }
+    return bag.pop();
+  }
+  function resetBall() { ball = { x: START.x, y: START.y, vx: 0, vy: 0, through: false }; scored = false; state = 'ready'; message = null; idleSince = performance.now(); }
+  function shoot(vx, vy, isDemo) { ball.vx = vx; ball.vy = vy; ball.through = false; scored = false; state = isDemo ? 'demo-fly' : 'flying'; message = null; }
+
+  /* ---------- pointer ---------- */
+  function toDesign(e) { var r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left - OX) / S, y: (e.clientY - r.top - OY) / S }; }
+  cv.addEventListener('pointerdown', function (e) {
+    if (state === 'won' && message) { resetBall(); return; }
+    var p = toDesign(e);
+    if (state === 'demo' || state === 'demo-fly') { demo = null; resetBall(); }
+    if (state !== 'ready') return;
+    if (Math.hypot(p.x - ball.x, p.y - ball.y) < BR * 3) { state = 'drag'; pointer = p; cv.classList.add('drag'); cv.setPointerCapture(e.pointerId); }
+  });
+  cv.addEventListener('pointermove', function (e) { if (state === 'drag') pointer = toDesign(e); });
+  function release() {
+    if (state !== 'drag') return;
+    cv.classList.remove('drag');
+    var dx = START.x - pointer.x, dy = START.y - pointer.y, d = Math.hypot(dx, dy), power = Math.min(d * 0.15, 24);
+    if (d < 20) { state = 'ready'; return; }
+    shoot(dx / d * power, dy / d * power, false);
+  }
+  cv.addEventListener('pointerup', release); cv.addEventListener('pointercancel', release);
+
+  /* ---------- drawing ---------- */
+  function outlinedText(t, x, y, size, fill) {
+    ctx.font = '600 ' + size + 'px Fredoka, "Segoe UI", Helvetica, Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = size / 4; ctx.strokeStyle = 'rgba(0,0,0,.65)'; ctx.lineJoin = 'round'; ctx.strokeText(t, x, y);
+    ctx.fillStyle = fill || '#fff'; ctx.fillText(t, x, y);
+  }
+  function drawHoop(front) {
+    var l = rimL(), r = rimR(), y = RIM.y;
+    if (!front) {
+      // backboard
+      var bx = RIM.cx - 70, by = y - 120;
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#111'; ctx.lineWidth = 5; roundRect(bx, by, 140, 100, 8); ctx.fill(); ctx.stroke();
+      ctx.lineWidth = 4; ctx.strokeRect(RIM.cx - 28, y - 62, 56, 38);
+      return;
+    }
+    // net: black outline then white lines
+    var bottomY = y + 62, inset = 22, k, pts = 7;
+    function netLines(color, w) {
+      ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round';
+      for (k = 0; k < pts; k++) { var t = k / (pts - 1); ctx.beginPath(); ctx.moveTo(l + t * (r - l), y); ctx.lineTo(l + inset + t * (r - l - 2 * inset), bottomY); ctx.stroke(); }
+      for (k = 1; k <= 3; k++) {
+        var f = k / 4, yy = y + f * (bottomY - y), a = l + inset * f, c = r - inset * f;
+        ctx.beginPath(); ctx.moveTo(a, yy); for (var m = 1; m <= pts - 1; m++) { var tx = a + (c - a) * m / (pts - 1); ctx.lineTo(tx, yy + (m % 2 ? 7 : 0)); } ctx.stroke();
+      }
+    }
+    netLines('#111', 5.5); netLines('#fff', 2.5);
+    // rim
+    ctx.strokeStyle = '#111'; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(l - 6, y); ctx.lineTo(r + 6, y); ctx.stroke();
+    ctx.strokeStyle = '#e8e8e8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(l - 4, y); ctx.lineTo(r + 4, y); ctx.stroke();
+  }
+  function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function drawBall(x, y, spin) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(spin || 0);
+    ctx.fillStyle = '#d88a55'; ctx.strokeStyle = '#111'; ctx.lineWidth = 2.6;
+    ctx.beginPath(); ctx.arc(0, 0, BR, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(-6, -7, BR * 0.5, 0, 6.2832); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-BR, 0); ctx.lineTo(BR, 0); ctx.moveTo(0, -BR); ctx.lineTo(0, BR); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-BR * 1.15, 0, BR * 0.95, -1, 1); ctx.stroke();
+    ctx.beginPath(); ctx.arc(BR * 1.15, 0, BR * 0.95, Math.PI - 1, Math.PI + 1); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, BR, 0, 6.2832); ctx.stroke();
+    ctx.restore();
+  }
+  function wrap(text, maxW, size) {
+    ctx.font = '600 ' + size + 'px Fredoka, "Segoe UI", Helvetica, Arial, sans-serif';
+    var words = text.split(' '), lines = [], line = '';
+    words.forEach(function (w) { var t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; });
+    lines.push(line); return lines;
+  }
+  function drawCard() {
+    var size = 22, lines = wrap(message, 300, size), h = lines.length * size * 1.35 + 58, w = 360;
+    var x = DW / 2 - w / 2, y = 400 - h / 2;
+    ctx.fillStyle = '#111'; roundRect(x, y + 5, w, h, 16); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#111'; ctx.lineWidth = 3; roundRect(x, y, w, h, 16); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#111'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '600 ' + size + 'px Fredoka, "Segoe UI", Helvetica, Arial, sans-serif';
+    lines.forEach(function (ln, i) { ctx.fillText(ln, DW / 2, y + 20 + size * 0.7 + i * size * 1.35); });
+    ctx.font = '500 13px Fredoka, "Segoe UI", sans-serif'; ctx.fillStyle = '#777'; ctx.fillText('tap to shoot again', DW / 2, y + h - 12);
+  }
+  function aimDots() {
+    var dx = START.x - pointer.x, dy = START.y - pointer.y, d = Math.hypot(dx, dy);
+    if (d < 20) return;
+    var power = Math.min(d * 0.15, 24), b = { x: START.x, y: START.y, vx: dx / d * power, vy: dy / d * power, through: true }, i;
+    for (i = 0; i < 26; i++) { step(b, 1.6); if (i % 2 === 0) { ctx.fillStyle = 'rgba(255,255,255,' + (0.9 - i * 0.03) + ')'; ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(b.x, b.y, 3.2, 0, 6.2832); ctx.fill(); ctx.stroke(); } }
+  }
+
+  /* ---------- loop ---------- */
+  var last = performance.now(), spin = 0;
+  function frame(now) {
+    var dt = Math.min((now - last) / 16.667, 2.5); last = now;
+    // tutorial demo after a short idle at the start
+    if (!demoDone && state === 'ready' && DEMO && !reduce && now - idleSince > 1400) { state = 'demo'; demo = { t0: now }; }
+    if (state === 'demo') {
+      var p = Math.min((now - demo.t0) / 900, 1), k = 1 - Math.pow(1 - p, 2), pull = 110;
+      var ang = Math.atan2(-DEMO.vy, -DEMO.vx);
+      ball.x = START.x + Math.cos(ang) * pull * k * 0.5; ball.y = START.y + Math.sin(ang) * pull * k * 0.5;
+      pointer = { x: START.x + Math.cos(ang) * pull * k, y: START.y + Math.sin(ang) * pull * k };
+      if (p >= 1) { ball.x = START.x; ball.y = START.y; demoDone = true; shoot(DEMO.vx, DEMO.vy, true); pointer = null; }
+    }
+    if (state === 'flying' || state === 'demo-fly' || state === 'won') {
+      if (step(ball, dt) && !scored) {
+        scored = true;
+        if (state === 'flying') { swishes++; message = nextMessage(); messageAt = now; state = 'won'; resetAt = now + 5200; }
+        else { resetAt = now + 1200; }
+      }
+      spin += ball.vx * 0.02 * dt;
+      if (state === 'won') { if (now > resetAt) resetBall(); }
+      else if (ball.y > DH + 70 || (scored && now > resetAt)) { if (!scored && state === 'flying') { resetAt = now + 300; } resetBall(); }
+    }
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, cv.clientWidth, cv.clientHeight);
+    ctx.setTransform(DPR * S, 0, 0, DPR * S, DPR * OX, DPR * OY);
+    outlinedText('🏀 Swish Signs', DW / 2, 34, 28);
+    if (state === 'ready' || state === 'demo') outlinedText('drag the ball back, let go, and swish', DW / 2, 66, 16, '#f4f1e6');
+    else if (swishes) outlinedText('swishes: ' + swishes, DW / 2, 66, 16, '#f4f1e6');
+    outlinedText('built for me, as a daily affirmation. hope it brightens your day too', DW / 2, 688, 17, '#f4f1e6');
+    drawHoop(false);
+    if (ball.y < RIM.y + 40 || ball.through === false) { /* ball behind the net while above the rim */ }
+    if (state === 'drag' && pointer) { aimDots(); var dx = START.x - pointer.x, dy = START.y - pointer.y, d = Math.min(Math.hypot(dx, dy), 160) || 1; drawBall(START.x - dx / (Math.hypot(dx, dy) || 1) * Math.min(Math.hypot(dx, dy), 160) * 0.35, START.y - dy / (Math.hypot(dx, dy) || 1) * Math.min(Math.hypot(dx, dy), 160) * 0.35, 0); }
+    else if (state === 'demo' && pointer) { drawBall(ball.x, ball.y, 0); }
+    else drawBall(ball.x, ball.y, spin);
+    drawHoop(true);
+    if (state === 'won' && message) drawCard();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  window.__swish = { get state() { return state; }, get swishes() { return swishes; }, get demo() { return DEMO; } };
+})();
+</script>
+</body>
+</html>

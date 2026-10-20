@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Divya | Portfolio</title>
+  <meta name="description" content="Divya's portfolio: a pixel-art jungle with a house for every project.">
+  <link rel="preload" as="image" href="assets/bg-jungle.png">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <meta property="og:title" content="Divya | Portfolio">
+  <meta property="og:description" content="Supply chain and process automation, in a pixel-art jungle.">
+  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/jobs.css?v=7">
+</head>
+<body>
+  <main class="stage" aria-label="Portfolio jungle">
+
+    <!-- ===== Back page: the daytime forest ===== -->
+    <div class="layer forest" id="forest">
+      <img class="bg" src="assets/bg-jungle.png" alt="A pixel-art jungle with a waterfall at sunset" width="1920" height="1080">
+
+      <!-- Fun house: opens the night party scene -->
+      <a class="piece house house-fun" href="#fun" aria-label="Fun mushroom den: fun projects">
+        <img src="assets/house-fun.png" alt="" width="270" height="260">
+        <span class="tag" aria-hidden="true">Fun projects</span>
+      </a>
+
+      <!-- Job house: opens the job board (companies and projects) -->
+      <a class="piece house house-projects" href="#jobs" aria-label="Mushroom den: my work">
+        <img src="assets/house-projects.png" alt="" width="254" height="234">
+        <span class="tag" aria-hidden="true">My work</span>
+      </a>
+
+      <!-- Cocori: the chatbot character; click opens #cocori-bubble -->
+      <button class="piece cocori" type="button" aria-label="Cocori, the chatbot: ask her about me" aria-expanded="false" aria-controls="cocori-bubble">
+        <img src="assets/cocori.png" alt="" width="154" height="220">
+        <span class="tag" aria-hidden="true">Cocori bot<small>ask her about me</small></span>
+      </button>
+
+      <!-- Rose bush: artwork credit -->
+      <button class="piece rosebush" id="credit-btn" type="button" aria-label="Artwork credit" aria-expanded="false" aria-controls="credit-bubble">
+        <img src="assets/rosebush.png" alt="" width="271" height="255">
+        <span class="tag" aria-hidden="true">Artwork credit</span>
+      </button>
+
+      <!-- In the pond: About me sign and a message in a bottle -->
+      <button class="pond-sign" id="about-btn" type="button" aria-label="About me" aria-expanded="false" aria-controls="about-bubble">
+        <img src="assets/sign.png" alt="" width="132" height="51">
+        <span class="sign-text" aria-hidden="true">About me</span>
+      </button>
+      <button class="bottle" id="contact-btn" type="button" aria-label="Contact me: message in a bottle" aria-expanded="false" aria-controls="contact-bubble">
+        <img src="assets/bottle.png" alt="" width="96" height="48">
+        <span class="tag" aria-hidden="true">Contact me</span>
+        <span class="ripple" aria-hidden="true"></span>
+      </button>
+
+      <a class="resume-btn" href="assets/Divya-Yadagani-Resume.pdf" target="_blank" rel="noopener" aria-label="Open my resume (PDF)">Resume <span aria-hidden="true">&darr;</span></a>
+
+      <p class="wip-note">This site is still in progress. I come back to add to it whenever I get time, especially project screenshots.</p>
+
+      <div class="bubble" id="cocori-bubble" role="dialog" aria-label="Chat with Cocori" hidden>
+        <button class="bubble-x" type="button" aria-label="Close">&times;</button>
+        <div class="chat-head"><img src="assets/cocori.png" alt="" width="36" height="52"><strong>Cocori</strong><span>ask me about Divya</span></div>
+        <div class="chat-log" aria-live="polite"></div>
+        <div class="chat-chips"></div>
+        <form class="chat-form"><input type="text" name="q" maxlength="200" placeholder="Ask, or search my projects..." autocomplete="off" aria-label="Your question"><button type="submit">Ask</button></form>
+      </div>
+      <div class="bubble" id="about-bubble" role="dialog" aria-label="About me" hidden>
+        <button class="bubble-x" type="button" aria-label="Close">&times;</button>
+        <p class="bubble-title">Hello! I&rsquo;m Divya.</p>
+        <ul class="points">
+          <li>10+ years streamlining and managing supply chain processes, end to end.</li>
+          <li>On a mission to help small and medium businesses scale efficiently.</li>
+        </ul>
+        <p class="about-resume"><a href="assets/Divya-Yadagani-Resume.pdf" target="_blank" rel="noopener">Open my resume (PDF)</a></p>
+        <details class="more">
+          <summary>More about Divya</summary>
+          <ul class="points">
+            <li>I&rsquo;m passionate about problem solving.</li>
+            <li>I&rsquo;m empathetic and love to help however I can.</li>
+            <li>I come from a small village, which inspired the look of this portfolio. (I&rsquo;m also a Disney kid, hehe.)</li>
+            <li>I&rsquo;m an admin director at High Park Ski Club.</li>
+            <li>I love time with my family. Lately my little niece&rsquo;s shopping hauls make my day.</li>
+          </ul>
+        </details>
+      </div>
+      <div class="bubble" id="contact-bubble" role="dialog" aria-label="Contact me" hidden>
+        <button class="bubble-x" type="button" aria-label="Close">&times;</button>
+        <div class="bubble-body"></div>
+      </div>
+      <div class="bubble" id="credit-bubble" role="dialog" aria-label="Artwork credit" hidden>
+        <button class="bubble-x" type="button" aria-label="Close">&times;</button>
+        <div class="bubble-body"></div>
+      </div>
+    </div>
+
+    <!-- ===== Fun house scene: night party with dancing animals ===== -->
+    <section class="layer fun" id="fun" aria-label="Fun house: the night party" hidden>
+      <img class="fun-bg" src="assets/fun/bg-fun.png" alt="" width="1920" height="1080">
+
+      <!-- Dancers, back to front. Position: % of the 640x360 art grid. -->
+      <div class="dancer zebra">
+        <img src="assets/fun/zebra.png" alt="A zebra dancing" width="117" height="141">
+      </div>
+
+      <div class="dancer giraffe">
+        <img class="g-body" src="assets/fun/giraffe.png" alt="A giraffe dancing" width="140" height="286">
+        <img class="g-head" src="assets/fun/giraffe.png" alt="" aria-hidden="true" width="140" height="286">
+      </div>
+
+      <div class="dancer lion">
+        <img src="assets/fun/lion.png" alt="A lion dancing" width="128" height="128">
+      </div>
+
+      <div class="dancer snake">
+        <img src="assets/fun/snake.png" alt="A snake swaying" width="95" height="86">
+      </div>
+
+      <div class="dancer monkey-hanging">
+        <img src="assets/fun/monkey-hanging.png" alt="A monkey swinging" width="107" height="101">
+      </div>
+
+      <div class="dancer monkey-sitting">
+        <img src="assets/fun/monkey-sitting.png" alt="A monkey bouncing" width="64" height="64">
+      </div>
+
+      <div class="dancer parrot-left">
+        <img src="assets/fun/parrot-left.png" alt="A blue parrot bobbing" width="48" height="41">
+      </div>
+
+      <div class="dancer parrot-right">
+        <img src="assets/fun/parrot-right.png" alt="A second blue parrot bobbing" width="41" height="27">
+      </div>
+
+      <!-- Foreground leaves that cover the lion's and giraffe's feet -->
+      <img class="fun-fg" src="assets/fun/foreground.png" alt="" aria-hidden="true" width="640" height="360">
+
+      <!-- Pulsing string lights and drifting fireflies are added by js/fun.js -->
+      <div class="bulbs" aria-hidden="true"></div>
+      <div class="fireflies" aria-hidden="true"></div>
+
+      <!-- Three wooden coconut disco balls, one per fun project (built from FUN_BALL / FUN_PROJECTS) -->
+      <div class="disco-wrap" id="disco-wrap" role="group" aria-label="Fun projects and prototypes"></div>
+      <div class="board fun-card" id="fun-card" role="dialog" aria-labelledby="fun-card-title" hidden>
+        <button class="card-x" type="button" aria-label="Close">&times;</button>
+        <h3 id="fun-card-title"></h3>
+        <div class="card-body"></div>
+      </div>
+
+      <button class="back-btn" id="fun-back" type="button">&larr; Back to the forest</button>
+    </section>
+
+    <!-- ===== Job board: pick a company ===== -->
+    <section class="layer scene jobs" id="jobs" aria-label="Where I have worked" hidden>
+      <img class="scene-bg" src="assets/jobs/board.webp" alt="" width="1920" height="1080">
+
+      <!-- Notes pinned to the cork board. Hover or focus one to read it bigger. -->
+      <article class="note note-breathe" tabindex="0" aria-label="Pinned note: Breathe, with a heart">
+        <p>Breathe</p>
+        <svg class="heart" viewBox="0 0 24 22" aria-hidden="true">
+          <path d="M12 21 C12 21 2 14.6 2 8.2 C2 4.6 4.7 2.4 7.4 2.4 C9.4 2.4 11.1 3.5 12 5.2 C12.9 3.5 14.6 2.4 16.6 2.4 C19.3 2.4 22 4.6 22 8.2 C22 14.6 12 21 12 21 Z" fill="#e5383b" stroke="#8c1c24" stroke-width="1.2" stroke-linejoin="round"/>
+          <path d="M6.2 6.2 C5 6.6 4.3 7.8 4.5 9" fill="none" stroke="#ff9aa2" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </article>
+
+      <article class="note note-party" tabindex="0" aria-label="Pinned note: party at night, shh">
+        <p>party at night</p>
+        <p class="shh">(shh)</p>
+      </article>
+
+      <article class="note note-flower" tabindex="0" aria-label="Pinned note: a small flower drawing">
+        <svg viewBox="0 0 40 46" aria-hidden="true">
+          <path d="M20 22 C20 31 19 38 20 45" fill="none" stroke="#3f7d3a" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M20 37 C13 36 10 32 9 28 C15 28 19 31 20 37 Z" fill="#58a64d" stroke="#2f6a2c" stroke-width="0.8" stroke-linejoin="round"/>
+          <path d="M20 34 C27 33 30 29 31 25 C25 25 21 28 20 34 Z" fill="#58a64d" stroke="#2f6a2c" stroke-width="0.8" stroke-linejoin="round"/>
+          <g transform="translate(20 15)" fill="#fff4d6" stroke="#7a3d3f" stroke-width="0.9">
+            <ellipse rx="4.3" ry="6.8" cy="-6.8"/>
+            <ellipse rx="4.3" ry="6.8" cy="-6.8" transform="rotate(60)"/>
+            <ellipse rx="4.3" ry="6.8" cy="-6.8" transform="rotate(120)"/>
+            <ellipse rx="4.3" ry="6.8" cy="-6.8" transform="rotate(180)"/>
+            <ellipse rx="4.3" ry="6.8" cy="-6.8" transform="rotate(240)"/>
+            <ellipse rx="4.3" ry="6.8" cy="-6.8" transform="rotate(300)"/>
+          </g>
+          <circle cx="20" cy="15" r="3.5" fill="#f2b632" stroke="#7a3d3f" stroke-width="0.9"/>
+        </svg>
+      </article>
+
+      <!-- The signpost: one arrow per company, built from js/jobs-data.js -->
+      <nav class="signpost" id="signpost" aria-label="Companies">
+        <span class="post" aria-hidden="true"></span>
+      </nav>
+
+      <button class="back-btn" id="jobs-back" type="button">&larr; Back to the forest</button>
+    </section>
+
+    <!-- ===== Game page: Swish Signs ===== -->
+    <section class="layer scene game" id="game" aria-label="Swish Signs" hidden>
+      <img class="scene-bg" src="assets/game/bg.webp" alt="" width="1920" height="1080">
+      <iframe class="game-frame" id="game-frame" title="Swish Signs: a basketball game" data-src="assets/swish/index.html"></iframe>
+      <button class="back-btn" id="game-back" type="button">&larr; Back to the party</button>
+    </section>
+
+    <!-- ===== Company scene: the cave, with wooden notice boards ===== -->
+    <section class="layer scene company" id="company" aria-labelledby="co-name" hidden>
+      <img class="scene-bg" src="assets/jobs/cave-day.webp" alt="" width="1920" height="1080">
+
+      <div class="col-left">
+        <header class="banner">
+          <h2 id="co-name"></h2>
+          <p id="co-industry" class="sector"></p>
+          <p id="co-about" class="about"></p>
+          <p id="co-link" class="co-link"></p>
+        </header>
+
+        <div class="board board-role">
+          <div class="managed" aria-label="People managed">
+            <strong id="co-managed">&mdash;</strong>
+            <span>people managed</span>
+          </div>
+          <div class="board-scroll">
+            <h3>My role</h3>
+            <div id="co-role"></div>
+            <h3>Tools</h3>
+            <div id="co-tools"></div>
+          </div>
+        </div>
+
+        <div class="board board-highlights">
+          <h3>Highlights</h3>
+          <div id="co-achieve"></div>
+          <div id="co-photos" class="photos"></div>
+        </div>
+      </div>
+
+      <div class="board board-projects">
+        <h3>Projects</h3>
+        <div id="co-projects" class="projects"></div>
+      </div>
+
+      <button class="back-btn" id="company-back" type="button">&larr; All companies</button>
+    </section>
+
+    <div class="lightbox" id="lightbox" hidden>
+      <button class="lightbox-x" type="button" aria-label="Close picture">&times;</button>
+      <img alt="">
+    </div>
+  </main>
+
+  <script src="js/fun-data.js?v=7"></script>
+  <script src="js/fun.js?v=7"></script>
+  <script src="js/cocori-data.js?v=7"></script>
+  <script src="js/site-data.js?v=7"></script>
+  <script src="js/jobs-data.js?v=7"></script>
+  <script src="js/nav.js?v=7"></script>
+</body>
+</html>
