@@ -17,7 +17,7 @@
    projects      one line each; click to drop down the write-up. Leave [] to hide the board.
                  { name, status (optional chip, e.g. 'In progress'),
                    explainer (optional one-line intro),
-                   video (optional YouTube link; shown as a button, no preview),
+                   video (optional YouTube link; shows a thumbnail that plays right in the card),
                    sections: [ { label: 'Challenge', text: 'one paragraph, or a list of lines' } ],
                    screenshots: [ { src, alt } ] (optional) }
    Every project uses the same four sections: My role, Challenge, Solution, Result.
@@ -175,7 +175,7 @@ window.JOBS = [
     projects: [
       {
         name: 'Inventory Prediction Tool 📦',
-        video: '',
+        video: 'https://www.youtube.com/watch?v=Stk5bkcwECs&t=8s',
         sections: [
           { label: 'My role', text: 'Built an order prediction tool to optimize container delivery for corporate catering clients.' },
           { label: 'Challenge', text: 'The catering partner didn’t send accurate daily order volumes, and restaurants were stuck with excess containers taking up storage.' },
@@ -186,6 +186,9 @@ window.JOBS = [
       {
         name: 'KPI Dashboard: Orders 📊',
         video: '',
+        screenshots: [
+          { src: 'https://c-p.rmcdn.net/6600b8938f8df100281c40b2/4698102/image-58c391a6-b2a2-42f4-87a6-62b65baadb50.png', alt: 'The Suppli orders KPI dashboard in Looker Studio' }
+        ],
         sections: [
           { label: 'My role', text: 'Designed a user-friendly dashboard to make sales and ops data accessible without SQL.' },
           { label: 'Challenge', text: 'Order data from several sales channels sat in AWS Redshift and only a few people could use it. Sales needed it to track restaurant growth and ops needed it to forecast, but neither knew SQL.' },
@@ -196,6 +199,9 @@ window.JOBS = [
       {
         name: 'Lost Order Analytical Dashboard 📉',
         video: '',
+        screenshots: [
+          { src: 'https://c-p.rmcdn.net/6600b8938f8df100281c40b2/4698102/image-9aa72503-0b98-411b-916b-7ee768c3ceda.png', alt: 'The Suppli lost order analytical dashboard' }
+        ],
         sections: [
           { label: 'My role', text: 'Built a dashboard to analyze container return behavior and reduce the loss rate.' },
           { label: 'Challenge', text: 'As orders grew, many first-time orders never came back as returns, and the return rate wasn’t being tracked.' },
@@ -205,7 +211,7 @@ window.JOBS = [
       },
       {
         name: 'Client Order Analysis Dashboard 📈',
-        video: '',
+        video: 'https://www.youtube.com/watch?v=y1fLU75yrd4',
         sections: [
           { label: 'My role', text: 'Designed a dashboard for sales and onboarding to track restaurant rotation, client impact and ordering trends.' },
           { label: 'Challenge', text: 'There was no easy way to see client order patterns, restaurant rotation or sustainability impact.' },
@@ -238,7 +244,7 @@ window.JOBS = [
       'Part of the safety team, and won a safety tag line competition whose line was placed across all company sites.'
     ],
     photos: [
-      { src: '', alt: 'The winning safety tag line displayed at a Future Foam site', caption: 'My winning safety tag line, placed across all company sites' }
+      { src: 'assets/jobs/screens/future-foam-safety.webp', alt: 'The Future Foam safety banner reading "Be a safety hero. Keep accidents at zero.", submitted by Divya Yadagani', caption: 'My winning safety tag line, placed across all company sites' }
     ],
     projects: [
       {

@@ -4,14 +4,16 @@ window.FUN_BULBS = [[323.5, 5.0, 4.2, "152,228,79"], [451.0, 8.0, 4.0, "95,205,2
 
 /* Fun projects & prototypes (the board in the night-party scene).
    Same format as the company projects in js/jobs-data.js:
-     name, status (chip), tools (chips), sections [{label, text}], video (YouTube link),
+     name, status (chip), tools (chips), sections [{label, text}],
+     video (YouTube link: thumbnail that plays in the card) or videoFile {src, poster, portrait} (a file in assets/fun/videos/),
      screenshots [{src, alt}].
    game: 'swish' adds a Play button that opens the game page (#fun/swish). */
 window.FUN_PROJECTS = [
   {
     name: '\uD83D\uDE8C HPSC Bus Voucher',
     tools: ['Google Apps Script', 'GitHub Pages', 'QR codes'],
-    video: '',
+    video: '',   /* paste a YouTube link here once it is uploaded; it then replaces the file below */
+    videoFile: { src: 'assets/fun/videos/hpsc-bus-voucher.mp4', poster: 'assets/fun/videos/hpsc-bus-voucher.webp', portrait: true },
     sections: [
       { label: 'Problem', text: 'Bus vouchers were printed and mailed to every member, which is tedious. One of the High Park Ski Club directors wanted to change the system.' },
       { label: 'Solution', text: [
@@ -24,7 +26,8 @@ window.FUN_PROJECTS = [
   {
     name: '\uD83E\uDDFE Vendor Invoice Portal + Reader',
     tools: ['Google Apps Script', 'Google Sheets & Drive', 'Gemini API'],
-    video: '',
+    video: '',   /* paste a YouTube link here once it is uploaded; it then replaces the file below */
+    videoFile: { src: 'assets/fun/videos/coppinwood-invoice-portal.mp4', poster: 'assets/fun/videos/coppinwood-invoice-portal.webp' },
     sections: [
       { label: 'Problem', text: 'Vendors delivered invoices with the order as a packing slip. Getting them to accounting was slow and delayed the month-end close.' },
       { label: 'Solution', text: [

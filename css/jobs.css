@@ -383,3 +383,30 @@
 .built-with h4 { margin-bottom: calc(var(--u) * 6); }
 .built-with .chip { font-size: calc(var(--u) * 16); }
 .play-link { border: 0; cursor: pointer; margin-right: calc(var(--u) * 8); }
+
+/* demo videos: thumbnail (or poster) the visitor can play in place */
+.video-embed { position: relative; width: 100%; aspect-ratio: 16/9; margin-top: calc(var(--u) * 10); overflow: hidden; background: #1c1209; border: calc(var(--u) * 3) solid var(--wood-dark); border-radius: calc(var(--u) * 8); }
+.video-embed iframe, .video-embed video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #000; }
+.video-thumb { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: #000; cursor: pointer; }
+.video-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .92; }
+.play-badge { position: absolute; left: 50%; top: 50%; width: calc(var(--u) * 84); height: calc(var(--u) * 58); margin: calc(var(--u) * -29) 0 0 calc(var(--u) * -42); display: grid; place-items: center; padding-left: calc(var(--u) * 5); font: 600 calc(var(--u) * 28)/1 var(--sign-font); color: #fff; background: #8c2a3d; border-radius: calc(var(--u) * 14); box-shadow: 0 calc(var(--u) * 3) calc(var(--u) * 10) rgba(0, 0, 0, .45); transition: transform .15s; }
+.video-thumb:hover .play-badge, .video-thumb:focus-visible .play-badge { transform: scale(1.08); }
+.video-thumb:focus-visible { outline: calc(var(--u) * 4) solid #fff; outline-offset: calc(var(--u) * -6); }
+.video-embed.portrait { width: auto; height: calc(var(--u) * 360); aspect-ratio: 9/19.5; margin-left: auto; margin-right: auto; }
+.video-file video { object-fit: contain; }
+.video-link-small { display: block; width: fit-content; margin-top: calc(var(--u) * 6); padding: calc(var(--u) * 5) calc(var(--u) * 11); font-size: calc(var(--u) * 15); }
+.shots-one { grid-template-columns: 1fr; }
+.shots-one .shot { aspect-ratio: auto; }
+.shots-one .shot img { height: auto; object-fit: contain; }
+
+/* company photos shown under the projects on the right board */
+#co-photos-title[hidden] { display: none; }
+.board-projects #co-photos-title { margin-top: calc(var(--u) * 16); }
+.photos.photos-board figure { width: calc(var(--u) * 340); }
+.photos.photos-board figcaption { font-size: calc(var(--u) * 18); margin-top: calc(var(--u) * 6); }
+.photos.photos-board .shot { aspect-ratio: 3/2; }
+
+/* a phone-shaped (portrait) demo video sits beside the write-up instead of pushing it down */
+.project-body.has-portrait { display: grid; grid-template-columns: calc(var(--u) * 212) 1fr; column-gap: calc(var(--u) * 26); align-items: start; }
+.project-body.has-portrait > * { grid-column: 2; }
+.project-body.has-portrait > .video-embed { grid-column: 1; grid-row: 1 / span 40; width: calc(var(--u) * 212); height: auto; margin: calc(var(--u) * 12) 0 0; aspect-ratio: 9/19.5; }

@@ -42,8 +42,9 @@ To add a company, copy one line and change the `slug` and `name`; its arrow appe
 ## Company scene (js/jobs-data.js)
 Banner = name, sector (`industry`), description (`about`) and an optional link. Left: My role + Tools, then Highlights (`achievements`, optional `photos`). Right: Projects.
 Each project is one line that drops down on click, with labelled sections (Challenge / Solution / Result...), an optional `status` chip and an optional YouTube `video` link.
-The video shows as a "Watch the demo on YouTube" button that opens YouTube in a new tab, so there is no embedded preview. Paste the link into the project's `video: ''`.
-Optional still images: `screenshots: [{ src: 'assets/jobs/screens/x.png', alt: '...' }]` (click to enlarge).
+A YouTube `video` link shows its thumbnail with a play button; clicking it plays the video right in the card (privacy-friendly youtube-nocookie player), with a small "Open on YouTube" link underneath. Paste the link into the project's `video: ''`.
+To use a video file instead, put an H.264 `.mp4` and a poster picture in `assets/fun/videos/` and set `videoFile: { src, poster, portrait }` (`portrait: true` places a phone-shaped video beside the text). A YouTube link wins if both are set.
+Optional still images: `screenshots: [{ src: 'assets/jobs/screens/x.png', alt: '...' }]` (click to enlarge; a single one shows full width). Company `photos` show under the Projects board on the right (under Highlights when a company has no projects).
 
 ## Forest page text (js/site-data.js)
 The artwork credit (rose bush) and the contact bottle read from `js/site-data.js`. Empty fields show "coming soon".

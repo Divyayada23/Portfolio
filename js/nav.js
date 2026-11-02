@@ -90,10 +90,65 @@
       var p = document.createElement('p'); p.textContent = text; parent.appendChild(p);
     }
   }
+  /* ---------- demo videos: a preview the visitor can play right here ----------
+     p.video      a YouTube link: shows its thumbnail, and a click swaps in the player (no tracking cookies)
+     p.videoFile  { src, poster, portrait } a video file in assets/: native player with a poster picture
+     A YouTube link wins if both are set. */
+  function ytParse(url) {
+    var m = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/))([\w-]{11})/);
+    if (!m) return null;
+    var t = String(url).match(/[?&#]t=(\d+)/);
+    return { id: m[1], start: t ? +t[1] : 0 };
+  }
+  function stopMedia(root) {
+    if (!root) return;
+    Array.prototype.forEach.call(root.querySelectorAll('video'), function (v) { try { v.pause(); } catch (e) {} });
+    Array.prototype.forEach.call(root.querySelectorAll('.video-embed'), function (box) {
+      if (box._thumb && box.querySelector('iframe')) { box.textContent = ''; box.appendChild(box._thumb); }
+    });
+  }
+  function addVideo(body, p) {
+    var yt = p.video ? ytParse(p.video) : null;
+    if (yt) {
+      var box = document.createElement('div'); box.className = 'video-embed';
+      var play = document.createElement('button'); play.type = 'button'; play.className = 'video-thumb';
+      play.setAttribute('aria-label', 'Play the demo video: ' + p.name);
+      var im = document.createElement('img');
+      im.src = 'https://i.ytimg.com/vi/' + yt.id + '/hqdefault.jpg'; im.alt = ''; im.loading = 'lazy'; im.referrerPolicy = 'no-referrer';
+      var badge = document.createElement('span'); badge.className = 'play-badge'; badge.setAttribute('aria-hidden', 'true'); badge.textContent = '▶';
+      play.appendChild(im); play.appendChild(badge);
+      play.addEventListener('click', function () {
+        var f = document.createElement('iframe');
+        f.src = 'https://www.youtube-nocookie.com/embed/' + yt.id + '?autoplay=1&rel=0' + (yt.start ? '&start=' + yt.start : '');
+        f.title = 'Demo video: ' + p.name;
+        f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen = true;
+        f.referrerPolicy = 'strict-origin-when-cross-origin';
+        box.textContent = ''; box.appendChild(f);
+      });
+      box._thumb = play; box.appendChild(play); body.appendChild(box);
+      var yl = document.createElement('a');
+      yl.className = 'video-link video-link-small'; yl.href = p.video; yl.target = '_blank'; yl.rel = 'noopener noreferrer';
+      yl.textContent = 'Open on YouTube ↗';
+      body.appendChild(yl);
+    } else if (p.video) {
+      var v = document.createElement('a');
+      v.className = 'video-link'; v.href = p.video; v.target = '_blank'; v.rel = 'noopener noreferrer';
+      v.textContent = '▶ Watch the demo on YouTube ↗';
+      body.appendChild(v);
+    } else if (p.videoFile && p.videoFile.src) {
+      var vb = document.createElement('div'); vb.className = 'video-embed video-file' + (p.videoFile.portrait ? ' portrait' : '');
+      var vid = document.createElement('video');
+      vid.controls = true; vid.preload = 'metadata'; vid.playsInline = true;
+      if (p.videoFile.poster) vid.poster = p.videoFile.poster;
+      vid.src = p.videoFile.src; vid.setAttribute('aria-label', 'Demo video: ' + p.name);
+      vb.appendChild(vid); body.appendChild(vb);
+    }
+  }
   function projectBody(p, id) {
       var body = document.createElement('div');
-      body.className = 'project-body'; if (id) body.id = id;
+      body.className = 'project-body' + (p.videoFile && p.videoFile.portrait && !p.video ? ' has-portrait' : ''); if (id) body.id = id;
       if (p.explainer) { var ex = document.createElement('p'); ex.className = 'explainer'; ex.textContent = p.explainer; body.appendChild(ex); }
+      addVideo(body, p);
       (p.sections || []).forEach(function (sec) {
         var h = document.createElement('h4'); h.textContent = sec.label; body.appendChild(h);
         addText(body, sec.text);
@@ -111,19 +166,13 @@
         pb.textContent = '\u25B6 ' + (p.playLabel || 'Play'); pb.addEventListener('click', function () { navigate('#fun/' + p.game, null, pb, 'game'); });
         body.appendChild(pb);
       }
-      if (p.video) {
-        var v = document.createElement('a');
-        v.className = 'video-link'; v.href = p.video; v.target = '_blank'; v.rel = 'noopener noreferrer';
-        v.textContent = '\u25B6 Watch the demo on YouTube \u2197';
-        body.appendChild(v);
-      }
       if (p.screenshots && p.screenshots.length) {
-        var shots = document.createElement('div'); shots.className = 'shots';
+        var shots = document.createElement('div'); shots.className = 'shots' + (p.screenshots.length === 1 ? ' shots-one' : '');
         p.screenshots.forEach(function (sc) {
           var t = document.createElement('button');
           t.type = 'button'; t.className = 'shot';
           t.setAttribute('aria-label', 'Enlarge screenshot: ' + (sc.alt || p.name));
-          var im = document.createElement('img'); im.src = sc.src; im.alt = sc.alt || ''; im.loading = 'lazy';
+          var im = document.createElement('img'); im.src = sc.src; im.alt = sc.alt || ''; im.loading = 'lazy'; im.referrerPolicy = 'no-referrer';
           t.appendChild(im);
           t.addEventListener('click', function () { openLightbox(sc, t); });
           shots.appendChild(t);
@@ -153,7 +202,7 @@
       body.hidden = true;
       btn.addEventListener('click', function () {
         var open = btn.getAttribute('aria-expanded') === 'true';
-        heads.forEach(function (h) { h.btn.setAttribute('aria-expanded', 'false'); h.body.hidden = true; });
+        heads.forEach(function (h) { h.btn.setAttribute('aria-expanded', 'false'); h.body.hidden = true; stopMedia(h.body); });
         if (!open) { btn.setAttribute('aria-expanded', 'true'); body.hidden = false; }
       });
       heads.push({ btn: btn, body: body });
@@ -162,8 +211,13 @@
   }
 
   /* photos under the highlights (a tile with a caption; "coming soon" until the image exists) */
-  function fillPhotos(items) {
-    var box = $('#co-photos');
+  function fillPhotos(items, hasProjects) {
+    var box = $('#co-photos'), title = $('#co-photos-title');
+    /* the Highlights board has no spare room, so photos go under the projects on the right when that board shows */
+    var onBoard = !!(items && items.length && hasProjects);
+    if (onBoard) { title.hidden = false; title.parentNode.insertBefore(box, title.nextSibling); }
+    else { title.hidden = true; $('.board-highlights').appendChild(box); }
+    box.classList.toggle('photos-board', onBoard);
     box.textContent = '';
     (items || []).forEach(function (ph) {
       var fig = document.createElement('figure');
@@ -185,7 +239,7 @@
   /* ---------- screenshot lightbox ---------- */
   var lightbox = $('#lightbox'), lightboxFrom = null;
   function openLightbox(sc, from) {
-    var im = $('img', lightbox); im.src = sc.src; im.alt = sc.alt || '';
+    var im = $('img', lightbox); im.referrerPolicy = 'no-referrer'; im.src = sc.src; im.alt = sc.alt || '';
     lightboxFrom = from; lightbox.hidden = false; $('.lightbox-x', lightbox).focus();
   }
   function closeLightbox() {
@@ -224,6 +278,7 @@
     funCard.dataset.i = i; funFrom = from;
     var t = $('#fun-card-title'); t.textContent = p.name;
     if (p.status) { var st = document.createElement('em'); st.className = 'status'; st.textContent = p.status; t.appendChild(st); }
+    stopMedia(funCard);
     var cb = $('.card-body', funCard); cb.textContent = ''; cb.appendChild(projectBody(p, ''));
     funCard.hidden = false;
     plights.forEach(function (b, k) { b.classList.toggle('is-active', k === i); b.setAttribute('aria-expanded', k === i ? 'true' : 'false'); });
@@ -231,6 +286,7 @@
   }
   function closeFunCard() {
     if (funCard.hidden) return;
+    stopMedia(funCard);
     funCard.hidden = true;
     plights.forEach(function (b) { b.classList.remove('is-active'); b.setAttribute('aria-expanded', 'false'); });
     if (funFrom && funFrom.focus) funFrom.focus({ preventScroll: true });
@@ -445,7 +501,7 @@
     if (job.role && job.role.length) addText(roleBox, job.role); else roleBox.appendChild(placeholder());
     fillChips('#co-tools', job.tools);
     fillList('#co-achieve', job.achievements);
-    fillPhotos(job.photos);
+    fillPhotos(job.photos, !!(job.projects && job.projects.length));
     $('.board-projects').hidden = !(job.projects && job.projects.length);
     fillProjects(job.projects, $('#co-projects'), 'proj-');
     if (pendingProject !== null) { var hh = fillProjects.heads[pendingProject]; pendingProject = null; if (hh) hh.btn.click(); }
@@ -563,6 +619,7 @@
   /* go somewhere new: add a history entry, then show it */
   function navigate(hash, origin, trigger, layerName) {
     if (busy) return;
+    stopMedia(document);
     var target = parse(hash);
     if (layerName && trigger) triggers[layerName] = trigger;
     history.pushState({ nav: true }, '', hash);
